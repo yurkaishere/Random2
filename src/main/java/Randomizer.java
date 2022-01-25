@@ -1,57 +1,72 @@
+import com.github.freva.asciitable.AsciiTable;
+import com.github.freva.asciitable.Column;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class Randomizer {
-    private List<Integer> numbers = new ArrayList<>();
-
-    public List<Integer> getNumbers() {
-        return numbers;
-    }
+    private final List<Student> students = new ArrayList<>();
 
     /** Let's rock this joint */
     public void start() throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
 
-        System.out.print("Input first number: ");
-        int firstNumber = Integer.parseInt(bufferedReader.readLine());
-        System.out.print("Input second number: ");
-        int lastNumber = Integer.parseInt(bufferedReader.readLine());
-        createListOfNumbers(firstNumber, lastNumber);
+        createListOfStudents();
+        Collections.shuffle(students);
 
-        while (true) {
-            if (getNumbers().size() == 0) {
-                System.out.println("<< There are no more numbers >>");
-                break;
-            }
+        if (students.size() == 0) {
+            System.out.println("<< Список пуст >>");
+        }
 
-            System.out.print("<< " + getRandomNumber() + " >>" + "\n" +
-                    "Press any key to continue (0 - exit)...");
+        for (int i = 0; i < students.size() - 1; i++) {
+
+            Student firstStudent = students.get(i);
+            Student nextStudent = students.get(i + 1);
+
+            System.out.println("> задаёт вопрос: " + firstStudent);
+            System.out.println("> отвечает: " + nextStudent);
+
+            System.out.print("Сколько балов начисляем для " + firstStudent.getLastName() + ": ");
+            firstStudent.setScore(Integer.parseInt(bufferedReader.readLine()));
+
+            System.out.print("Сколько балов начисляем для " + nextStudent.getLastName() + ": ");
+            nextStudent.setScore(Integer.parseInt(bufferedReader.readLine()));
+
+            System.out.println("---------------------------------------------------");
+            System.out.println("Нажмите любую кнопку для продолжения (0 - выход)...");
+            System.out.print("---------------------------------------------------");
             String s = bufferedReader.readLine();
+
+            if (i == students.size() - 2) {
+                System.out.println("Больше никого нет");
+            }
 
             if (s.equals("0")) {
                 break;
             }
         }
+
+        showResults();
     }
 
     /** Create list of Numbers */
-    public void createListOfNumbers(int firstNumber, int lastNumber) {
-        int size = lastNumber - firstNumber + 1; // size includes last element that's why we increase it on 1
-        for (int i = 0; i < size; i++) {
-            numbers.add(firstNumber++); // filling list with elements
-        }
+    public void createListOfStudents() {
+        students.add(new Student(1, 1, "Ананьев", "Максим", 0));
+        students.add(new Student(2, 1, "Симонов", "Юрий", 0));
+        students.add(new Student(3, 1, "Полтараков", "Егор", 0));
+        students.add(new Student(4, 1, "Деревяго", "Роман", 0));
     }
 
-    /** Get random number from List and remove this number to exclude repeat */
-    public int getRandomNumber() {
-        Collections.shuffle(numbers); // shuffle List
-        int result = numbers.get(0);
-        numbers.remove(0);
-        return result;
+    public void showResults() {
+        Collections.sort(students);
+        System.out.println(AsciiTable.getTable(students, Arrays.asList(
+                new Column().with(planet -> Integer.toString(planet.getId())),
+                new Column().header("Group").with(planet -> Integer.toString(planet.getGroupId())),
+                new Column().header("Last name").with(Student::getLastName),
+                new Column().header("First name").with(Student::getFirstName),
+                new Column().header("Score").with(planet -> Integer.toString(planet.getScore())))));
     }
 
 }
